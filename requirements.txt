@@ -1,0 +1,7 @@
+gradio
+nbformat
+openai-agents
+openai
+pandas
+pydantic
+python-dotenv
