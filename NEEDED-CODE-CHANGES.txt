@@ -1,0 +1,14 @@
+I created Semantic Query Agent - Refresh Verified in the Playground.
+
+This version makes a refresh failure unambiguous:
+
+Every submission receives a sequential Request ID.
+The right panel displays the exact submitted query and a timestamp.
+All eight example questions generate distinct:
+Business explanations
+PostgreSQL
+Retrieved schema context
+Result-table columns and values
+The results panel resets to SQL Inspector after every run.
+While processing, the prior right-panel content is cleared.
+For example, run the “lifetime value” query, then run “lowest inventory.” The right panel should change from customer/order SQL and results to inventory/products SQL and low-stock product rows, and its Request ID should increment.

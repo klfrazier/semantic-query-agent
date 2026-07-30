@@ -74,11 +74,11 @@ def inspect_database() -> str:
     return json.dumps({"database": str(DATABASE_PATH.relative_to(ROOT_DIR)), "tables": tables}, indent=2)
 
 
-with gr.Blocks(title="Semantic Query Agent", theme=gr.themes.Soft()) as demo:
+with gr.Blocks(title="Semantic Query Agent") as demo:
     gr.Markdown("# Semantic Query Agent\nAsk business questions about the local Microsoft Northwind SQLite database.")
     with gr.Row():
         with gr.Column(scale=3):
-            chat = gr.Chatbot(label="Business conversation", type="messages", height=480)
+            chat = gr.Chatbot(label="Business conversation", height=480)
             question = gr.Textbox(label="Ask a question", placeholder="Which products generated the most revenue?", lines=2)
             with gr.Row():
                 submit = gr.Button("Run query", variant="primary")
@@ -88,7 +88,7 @@ with gr.Blocks(title="Semantic Query Agent", theme=gr.themes.Soft()) as demo:
             with gr.Accordion("Generated SQL", open=True):
                 sql_view = gr.Code(language="sql", label="Read-only SQL")
             with gr.Accordion("Schema context used", open=False):
-                schema_view = gr.Code(language="text", label="Relevant tables and columns")
+                schema_view = gr.Code(language=None, label="Relevant tables and columns")
             execution_view = gr.Textbox(label="Execution time", interactive=False)
             gr.Code(value=inspect_database(), language="json", label="Local database")
     with gr.Tab("DataFrame results"):
