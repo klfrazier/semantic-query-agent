@@ -1,0 +1,139 @@
+TABLE CUSTOMERDEMOGRAPHICS{
+  "customertypeid" NCHAR(10)
+  "customerdesc" NTEXT
+}
+
+TABLE CUSTOMERCUSTOMERDEMO{
+  "customerid" NCHAR(5)
+  "customertypeid" NCHAR(10)
+}
+
+TABLE CUSTOMERS{
+  "customerid" NCHAR(5)
+  "companyname" NVARCHAR(40)
+  "contactname" NVARCHAR(30)
+  "contacttitle" NVARCHAR(30)
+  "address" NVARCHAR(60)
+  "city" NVARCHAR(15)
+  "region" NVARCHAR(15)
+  "postalcode" NVARCHAR(10)
+  "country" NVARCHAR(15)
+  "phone" NVARCHAR(24)
+  "fax" NVARCHAR(24)
+}
+
+TABLE SHIPPERS{
+  "shipperid" INT
+  "companyname" NVARCHAR(40)
+  "phone" NVARCHAR(24)
+}
+
+TABLE ORDER_DETAILS{
+  "Orderid" INT
+  "productid" INT
+  "unitprice" MONEY
+  "quantity" SMALLINT
+  "discount" REAL
+}
+
+TABLE ORDERS{
+  "orderid" INT
+  "customerid" NCHAR(5)
+  "employeeid" INT
+  "orderdate" DATETIME
+  "requireddate" DATETIME
+  "shipdate" DATETIME
+  "shipvia" INT
+  "freight" MONEY
+  "shipname" NVARCHAR(40)
+  "shipaddress" NVARCHAR(60)
+  "shipcity" NVARCHAR(15)
+  "shipregion" NVARCHAR(15)
+}
+
+TABLE EMPLOYEES{
+  "employeeid" INT
+  "lastname" NVARCHAR(20)
+  "firstname" NVARCHAR(10)
+  "title" NVARCHAR(30)
+  "titleofcourtesy" NVARCHAR(25)
+  "birthdate" DATETIME
+  "hiredate" DATETIME
+  "address" NVARCHAR(60)
+  "city" NVARCHAR(15)
+  "region" NVARCHAR(15)
+  "postalcode" NVARCHAR(10)
+  "country" VARCHAR(15)
+}
+
+
+TABLE EMPLOYEETERITORIES{
+  "employeeid" INT
+  "territoryid" NVARCHAR(20)
+}
+
+
+TABLE TERITORIES{
+  "territoryid" NVARCHAR(20)
+  "territorydescription" NCHAR(50)
+  "regionid" INT
+}
+
+
+TABLE REGION{
+  "regionid" INT
+  "regiondescription" NCHAR(50)
+}
+
+TABLE PRODUCTS{
+  "productid" INT
+  "productname" NVARCHAR(40)
+  "supplierid" INT
+  "categoryid" INT
+  "quantityperunit" NVARCHAR(20)
+  "unitprice" MONEY
+  "unitsinstock" SMALLINT
+  "unitsonorder" SMALLINT
+  "reorderlevel" SMALLINT
+  "discontinued" BIT
+}
+
+TABLE SUPLIERS{
+  "supplierid" INT
+  "companyname" NVARCHAR(40)
+  "contactname" NVARCHAR(30)
+  "contacttitle" NVARCHAR(30)
+  "address" NVARCHAR(60)
+  "city" NVARCHAR(15)
+  "region" NVARCHAR(15)
+  "postalcode" NVARCHAR(10)
+  "country" NVARCHAR(15)
+  "phone" NVARCHAR(24)
+  "fax" NVARCHAR(24)
+  "homepage" NTEXT
+}
+
+TABLE CATEGORIES{
+  "categoryid" INT
+  "categoryname" NVARCHAR(15)
+  "description" NTEXT
+  "picture" IMAGE
+}
+
+
+
+Ref: "CUSTOMERDEMOGRAPHICS"."customertypeid" > "CUSTOMERCUSTOMERDEMO"."customertypeid"
+Ref: "CUSTOMERCUSTOMERDEMO"."customerid" > "CUSTOMERS"."customerid"
+
+Ref: "ORDERS"."customerid" > "CUSTOMERS"."customerid"
+Ref: "ORDERS"."shipvia" > "SHIPPERS"."shipperid"
+Ref: "ORDERS"."orderid" > "ORDER_DETAILS"."Orderid"
+Ref: "ORDERS"."employeeid" > "EMPLOYEES"."employeeid"
+
+Ref: "PRODUCTS"."productid" > "ORDER_DETAILS"."productid"
+Ref: "PRODUCTS"."supplierid" > "SUPLIERS"."supplierid"
+Ref: "PRODUCTS"."categoryid" > "CATEGORIES"."categoryid"
+
+Ref: "TERITORIES"."regionid" > "REGION"."regionid"
+Ref: "EMPLOYEETERITORIES"."territoryid" > "TERITORIES"."territoryid"
+Ref: "EMPLOYEES"."employeeid" > "EMPLOYEETERITORIES"."employeeid"
