@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
 import time
 from pathlib import Path
@@ -57,7 +58,7 @@ def run_query(message: str, history: list[dict[str, str]] | None) -> tuple:
         schema = answer["schema_context"]
         dataframe = answer["dataframe"]
         execution = f"{round((time.perf_counter() - started) * 1000, 1)} ms total \u00b7 {answer['execution_ms']:.1f} ms SQLite"
-        num_tables = str(schema.upper().count("CREATE TABLE")) if schema else "0"
+        num_tables = str(len(set(re.findall(r'\b(?:FROM|JOIN)\s+"?(\w+)"?', sql, re.IGNORECASE)))) if sql else "0"
         num_rows = str(len(dataframe)) if dataframe is not None and not dataframe.empty else "0"
     except Exception as error:
         response = f"I could not complete that request: {error}"
@@ -94,7 +95,7 @@ with gr.Blocks(title="Semantic Query Agent") as demo:
                     sql_view = gr.Code(language="sql", label="")
                 with gr.Tab("Schema Context"):
                     schema_view = gr.Code(language=None, label="")
-                with gr.Tab("DataFrame Results"):
+                with gr.Tab("Data Results"):
                     results = gr.Dataframe(label="Query results", interactive=False)
             with gr.Row():
                 execution_view = gr.Textbox(label="Execution Time", interactive=False)
