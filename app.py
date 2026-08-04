@@ -47,7 +47,7 @@ def load_agent() -> dict[str, Any]:
 
 def run_query(message: str, history: list[dict[str, str]] | None) -> tuple:
     if not message or not message.strip():
-        return history or [], "", "", "", "", "", "", pd.DataFrame()
+        return history or [], "", "", "", "", "", "", pd.DataFrame(), gr.Tabs(selected="sql")
 
     started = time.perf_counter()
     try:
@@ -70,7 +70,7 @@ def run_query(message: str, history: list[dict[str, str]] | None) -> tuple:
         num_rows = "0"
 
     messages = list(history or []) + [{"role": "user", "content": message}, {"role": "assistant", "content": response}]
-    return messages, "", sql, schema, execution, num_tables, num_rows, dataframe
+    return messages, "", sql, schema, execution, num_tables, num_rows, dataframe, gr.Tabs(selected="sql")
 
 
 def inspect_database() -> str:
@@ -90,8 +90,8 @@ with gr.Blocks(title="Semantic Query Agent") as demo:
                 clear = gr.Button("Clear")
             gr.Examples(EXAMPLES, inputs=question, label="Demo questions")
         with gr.Column(scale=3):
-            with gr.Tabs():
-                with gr.Tab("Generated SQL"):
+            with gr.Tabs(selected="sql") as result_tabs:
+                with gr.Tab("Generated SQL", id="sql"):
                     sql_view = gr.Code(language="sql", label="")
                 with gr.Tab("Schema Context"):
                     schema_view = gr.Code(language=None, label="")
@@ -102,10 +102,10 @@ with gr.Blocks(title="Semantic Query Agent") as demo:
                 tables_used_view = gr.Textbox(label="Tables Used", interactive=False)
                 rows_returned_view = gr.Textbox(label="Rows Returned", interactive=False)
 
-    outputs = [chat, question, sql_view, schema_view, execution_view, tables_used_view, rows_returned_view, results]
+    outputs = [chat, question, sql_view, schema_view, execution_view, tables_used_view, rows_returned_view, results, result_tabs]
     submit.click(run_query, inputs=[question, chat], outputs=outputs)
     question.submit(run_query, inputs=[question, chat], outputs=outputs)
-    clear.click(lambda: ([], "", "", "", "", "", "", pd.DataFrame()), outputs=outputs)
+    clear.click(lambda: ([], "", "", "", "", "", "", pd.DataFrame(), gr.Tabs(selected="sql")), outputs=outputs)
 
 
 if __name__ == "__main__":
