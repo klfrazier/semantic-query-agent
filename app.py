@@ -44,9 +44,9 @@ def load_agent() -> dict[str, Any]:
     return _AGENT_NAMESPACE
 
 
-def run_query(message: str, history: list[dict[str, str]] | None) -> tuple[list[dict[str, str]], str, str, str, str, pd.DataFrame]:
+def run_query(message: str, history: list[dict[str, str]] | None) -> tuple:
     if not message or not message.strip():
-        return history or [], "", "", "", "", pd.DataFrame()
+        return history or [], "", "", "", "", "", "", pd.DataFrame()
 
     started = time.perf_counter()
     try:
@@ -56,16 +56,20 @@ def run_query(message: str, history: list[dict[str, str]] | None) -> tuple[list[
         sql = answer["sql"]
         schema = answer["schema_context"]
         dataframe = answer["dataframe"]
-        execution = f"{round((time.perf_counter() - started) * 1000, 1)} ms total · {answer['execution_ms']:.1f} ms SQLite"
+        execution = f"{round((time.perf_counter() - started) * 1000, 1)} ms total \u00b7 {answer['execution_ms']:.1f} ms SQLite"
+        num_tables = str(schema.upper().count("CREATE TABLE")) if schema else "0"
+        num_rows = str(len(dataframe)) if dataframe is not None and not dataframe.empty else "0"
     except Exception as error:
         response = f"I could not complete that request: {error}"
         sql = ""
         schema = ""
         dataframe = pd.DataFrame()
         execution = f"{round((time.perf_counter() - started) * 1000, 1)} ms total"
+        num_tables = "0"
+        num_rows = "0"
 
     messages = list(history or []) + [{"role": "user", "content": message}, {"role": "assistant", "content": response}]
-    return messages, "", sql, schema, execution, dataframe
+    return messages, "", sql, schema, execution, num_tables, num_rows, dataframe
 
 
 def inspect_database() -> str:
@@ -77,27 +81,30 @@ def inspect_database() -> str:
 with gr.Blocks(title="Semantic Query Agent") as demo:
     gr.Markdown("# Semantic Query Agent\nAsk business questions about the local Microsoft Northwind SQLite database.")
     with gr.Row():
-        with gr.Column(scale=3):
+        with gr.Column(scale=2):
             chat = gr.Chatbot(label="Business conversation", height=480)
             question = gr.Textbox(label="Ask a question", placeholder="Which products generated the most revenue?", lines=2)
             with gr.Row():
                 submit = gr.Button("Run query", variant="primary")
                 clear = gr.Button("Clear")
             gr.Examples(EXAMPLES, inputs=question, label="Demo questions")
-        with gr.Column(scale=2):
-            with gr.Accordion("Generated SQL", open=True):
-                sql_view = gr.Code(language="sql", label="Read-only SQL")
-            with gr.Accordion("Schema context used", open=False):
-                schema_view = gr.Code(language=None, label="Relevant tables and columns")
-            execution_view = gr.Textbox(label="Execution time", interactive=False)
-            gr.Code(value=inspect_database(), language="json", label="Local database")
-    with gr.Tab("DataFrame results"):
-        results = gr.Dataframe(label="Query results", interactive=False)
+        with gr.Column(scale=3):
+            with gr.Tabs():
+                with gr.Tab("Generated SQL"):
+                    sql_view = gr.Code(language="sql", label="")
+                with gr.Tab("Schema Context"):
+                    schema_view = gr.Code(language=None, label="")
+                with gr.Tab("DataFrame Results"):
+                    results = gr.Dataframe(label="Query results", interactive=False)
+            with gr.Row():
+                execution_view = gr.Textbox(label="Execution Time", interactive=False)
+                tables_used_view = gr.Textbox(label="Tables Used", interactive=False)
+                rows_returned_view = gr.Textbox(label="Rows Returned", interactive=False)
 
-    outputs = [chat, question, sql_view, schema_view, execution_view, results]
+    outputs = [chat, question, sql_view, schema_view, execution_view, tables_used_view, rows_returned_view, results]
     submit.click(run_query, inputs=[question, chat], outputs=outputs)
     question.submit(run_query, inputs=[question, chat], outputs=outputs)
-    clear.click(lambda: ([], "", "", "", "", pd.DataFrame()), outputs=outputs)
+    clear.click(lambda: ([], "", "", "", "", "", "", pd.DataFrame()), outputs=outputs)
 
 
 if __name__ == "__main__":
